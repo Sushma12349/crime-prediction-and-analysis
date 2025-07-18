@@ -1,0 +1,17 @@
+id,type,location,latitude,longitude,rate
+1,Robbery,Delhi,28.7041,77.1025,High
+2,Assault,Mumbai,19.0760,72.8777,Medium
+3,Burglary,Bangalore,12.9716,77.5946,Low
+4,Theft,Chennai,13.0827,80.2707,Medium
+5,Fraud,Hyderabad,17.3850,78.4867,Low
+1,Murder,Maharashtra,19.7515,75.7139,Low
+2,Cyber Crime,Kerala,10.8505,76.2711,Low
+3,Robbery,Gujarat,22.2587,71.1924,High
+4,Assault,Tamil Nadu,11.1271,78.6569,Medium
+5,Theft,Delhi,28.7041,77.1025,High
+6,Burglary,Karnataka,15.3173,75.7139,Medium
+7,Fraud,Telangana,18.1124,79.0193,Low
+8,Kidnapping,Rajasthan,27.0238,74.2179,Medium
+9,Drug Offense,Punjab,31.1471,75.3412,High
+10,Domestic Violence,West Bengal,22.9868,87.855,Medium
+

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crime Map and Details</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #map { height: 500px; width: 100%; margin-bottom: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+
+<h2>Crime Map</h2>
+<div id="map"></div>
+
+<h3>Crime Details and Rate</h3>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Rate</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for crime in crimes %}
+        <tr>
+            <td>{{ crime.id }}</td>
+            <td>{{ crime.type }}</td>
+            <td>{{ crime.location }}</td>
+            <td>{{ crime.latitude }}</td>
+            <td>{{ crime.longitude }}</td>
+            <td>{{ crime.rate }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    var map = L.map('map').setView([20.5937, 78.9629], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var crimes = JSON.parse('{{ crimes | tojson | safe }}');
+
+    crimes.forEach(function(crime) {
+        var marker = L.marker([crime.latitude, crime.longitude]).addTo(map);
+        marker.bindPopup('Loading prediction...');
+
+        marker.on('click', function () {
+            var hour = new Date().getHours();
+            fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    latitude: crime.latitude,
+                    longitude: crime.longitude,
+                    hour: hour
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                var popupHtml = `<b>${crime.type}</b><br>
+                                ${crime.location}<br>
+                                Rate: ${crime.rate}<br>
+                                🕒 Hour: ${hour}<br>
+                                🔮 <b>Predicted:</b> ${result.prediction}`;
+                marker.setPopupContent(popupHtml).openPopup();
+            })
+            .catch(() => {
+                marker.setPopupContent("Prediction failed.");
+            });
+        });
+    });
+
+    map.on('click', function(e) {
+        var lat = e.latlng.lat;
+        var lon = e.latlng.lng;
+        var hour = new Date().getHours();
+
+        fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ latitude: lat, longitude: lon, hour: hour })
+        })
+        .then(response => response.json())
+        .then(result => {
+            var popupHtml = `<b>New Location</b><br>
+                            Lat: ${lat.toFixed(4)}<br>
+                            Lon: ${lon.toFixed(4)}<br>
+                            🕒 Hour: ${hour}<br>
+                            🔮 <b>Predicted:</b> ${result.prediction}`;
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup(popupHtml)
+                .openPopup();
+        })
+        .catch(() => {
+            alert("Prediction failed.");
+        });
+    });
+</script>
+
+</body>
+</html>
